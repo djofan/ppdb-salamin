@@ -1,0 +1,6 @@
+{
+  "name": "PPDB Pondok Pesantren Salamatul Insan",
+  "description": "Sistem Tes dan Penilaian Calon Peserta Didik Baru (PPDB) Pondok Pesantren Salamatul Insan",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

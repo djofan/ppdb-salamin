@@ -1,0 +1,242 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role-based access control",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth user ID" },
+        "email": { "type": "string", "format": "email", "description": "Email address" },
+        "displayName": { "type": "string", "maxLength": 100, "description": "Full name" },
+        "role": { "type": "string", "enum": ["admin", "examiner", "applicant"], "description": "Assigned user role" },
+        "phoneNumber": { "type": "string", "maxLength": 20, "description": "Phone or WhatsApp number" },
+        "photoURL": { "type": "string", "description": "Profile picture URL" },
+        "createdAt": { "type": "string", "description": "ISO timestamp of creation" },
+        "updatedAt": { "type": "string", "description": "ISO timestamp of last update" }
+      },
+      "required": ["uid", "email", "displayName", "role"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Trusted administrative authority registry",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email", "description": "Admin email address" },
+        "role": { "type": "string", "enum": ["admin"], "description": "Admin authorization role" },
+        "addedAt": { "type": "string", "description": "Timestamp when admin access was granted" }
+      },
+      "required": ["email", "role"]
+    },
+    "Applicant": {
+      "title": "Applicant",
+      "description": "Prospective student (santri) registration record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Document ID" },
+        "userId": { "type": "string", "description": "Linked auth user UID" },
+        "registrationNumber": { "type": "string", "pattern": "^PPDB-[0-9]{4}-[0-9]{4}$", "description": "Official registration code" },
+        "fullName": { "type": "string", "maxLength": 120, "description": "Student full name" },
+        "nisn": { "type": "string", "maxLength": 20, "description": "National student identification number" },
+        "gender": { "type": "string", "enum": ["Laki-laki", "Perempuan"], "description": "Student gender" },
+        "birthPlace": { "type": "string", "maxLength": 80, "description": "Birth city" },
+        "birthDate": { "type": "string", "description": "Birth date YYYY-MM-DD" },
+        "previousSchool": { "type": "string", "maxLength": 120, "description": "Previous school origin" },
+        "guardianName": { "type": "string", "maxLength": 120, "description": "Parent or guardian name" },
+        "guardianPhone": { "type": "string", "maxLength": 25, "description": "Parent contact phone" },
+        "targetLevel": { "type": "string", "enum": ["Tsanawiyyah (MTs)", "Aliyah (MA)", "Kulliyatul Mu'allimin (KMI)"], "description": "Target education tier" },
+        "status": { "type": "string", "enum": ["registered", "scheduled", "tested", "reviewed", "accepted", "rejected"], "description": "Current pipeline status" },
+        "testScheduleId": { "type": "string", "description": "Assigned test schedule" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "description": "Update timestamp" }
+      },
+      "required": ["userId", "registrationNumber", "fullName", "targetLevel", "status"]
+    },
+    "TestCategory": {
+      "title": "TestCategory",
+      "description": "Assessment subject category like Tahfidz, Islamic Studies, Academic Aptitude",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Category document ID" },
+        "name": { "type": "string", "maxLength": 100, "description": "Category title" },
+        "code": { "type": "string", "maxLength": 30, "description": "Category shortcode" },
+        "description": { "type": "string", "maxLength": 300, "description": "Description" },
+        "passingScore": { "type": "number", "description": "Minimum passing threshold" },
+        "testType": { "type": "string", "enum": ["computer_based", "oral_exam", "interview"], "description": "Delivery method" },
+        "active": { "type": "boolean", "description": "Is category active" }
+      },
+      "required": ["name", "code", "passingScore", "testType", "active"]
+    },
+    "QuestionBank": {
+      "title": "QuestionBank",
+      "description": "Question bank for CBT and standardized rubrics",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Bank ID" },
+        "categoryId": { "type": "string", "description": "Parent category ID" },
+        "title": { "type": "string", "maxLength": 150, "description": "Question set title" },
+        "durationMinutes": { "type": "number", "description": "Time limit in minutes" },
+        "totalQuestions": { "type": "number", "description": "Total question count" },
+        "instructions": { "type": "string", "maxLength": 500, "description": "Test instructions" },
+        "active": { "type": "boolean", "description": "Availability status" }
+      },
+      "required": ["categoryId", "title", "durationMinutes", "totalQuestions", "active"]
+    },
+    "TestSchedule": {
+      "title": "TestSchedule",
+      "description": "Scheduled exam slots and examiner allocations",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Schedule ID" },
+        "title": { "type": "string", "maxLength": 120, "description": "Session title" },
+        "sessionDate": { "type": "string", "description": "Date YYYY-MM-DD" },
+        "startTime": { "type": "string", "description": "Start time HH:mm" },
+        "endTime": { "type": "string", "description": "End time HH:mm" },
+        "location": { "type": "string", "maxLength": 100, "description": "Hall or virtual room" },
+        "maxCapacity": { "type": "number", "description": "Maximum applicants" },
+        "currentCount": { "type": "number", "description": "Registered count" },
+        "examinerId": { "type": "string", "description": "Assigned primary examiner" },
+        "examinerName": { "type": "string", "description": "Assigned examiner name" },
+        "active": { "type": "boolean", "description": "Schedule active status" }
+      },
+      "required": ["title", "sessionDate", "startTime", "endTime", "location", "maxCapacity"]
+    },
+    "TestSession": {
+      "title": "TestSession",
+      "description": "Individual test sitting record for an applicant",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Session ID" },
+        "applicantId": { "type": "string", "description": "Applicant document ID" },
+        "userId": { "type": "string", "description": "Student user ID" },
+        "scheduleId": { "type": "string", "description": "Associated schedule ID" },
+        "categoryId": { "type": "string", "description": "Test category ID" },
+        "categoryName": { "type": "string", "description": "Test category name" },
+        "status": { "type": "string", "enum": ["not_started", "in_progress", "submitted", "graded"], "description": "Session status" },
+        "startedAt": { "type": "string", "description": "Start timestamp" },
+        "submittedAt": { "type": "string", "description": "Submission timestamp" },
+        "score": { "type": "number", "description": "Achieved numeric score" },
+        "notes": { "type": "string", "maxLength": 500, "description": "Observer or CBT notes" }
+      },
+      "required": ["applicantId", "userId", "categoryId", "status"]
+    },
+    "TestAnswer": {
+      "title": "TestAnswer",
+      "description": "Confidential applicant exam answers",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Answer record ID" },
+        "sessionId": { "type": "string", "description": "Parent test session ID" },
+        "applicantId": { "type": "string", "description": "Applicant ID" },
+        "userId": { "type": "string", "description": "User UID" },
+        "questionId": { "type": "string", "description": "Question identifier" },
+        "selectedOption": { "type": "string", "description": "Applicant selected answer" },
+        "isCorrect": { "type": "boolean", "description": "Evaluation result" },
+        "score": { "type": "number", "description": "Awarded points" }
+      },
+      "required": ["sessionId", "applicantId", "userId", "questionId"]
+    },
+    "TestResult": {
+      "title": "TestResult",
+      "description": "Consolidated test results across categories for an applicant",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Result document ID" },
+        "applicantId": { "type": "string", "description": "Applicant ID" },
+        "registrationNumber": { "type": "string", "description": "Registration code" },
+        "academicScore": { "type": "number", "description": "Academic CBT score" },
+        "tahfidzScore": { "type": "number", "description": "Tahfidz & Quran recitation score" },
+        "interviewScore": { "type": "number", "description": "Interview & personality score" },
+        "finalScore": { "type": "number", "description": "Weighted aggregate score" },
+        "status": { "type": "string", "enum": ["passed", "failed", "conditional", "pending"], "description": "Assessment state" },
+        "decidedAt": { "type": "string", "description": "Timestamp" },
+        "decidedBy": { "type": "string", "description": "Admin or Head Examiner UID" }
+      },
+      "required": ["applicantId", "registrationNumber", "finalScore", "status"]
+    },
+    "ExaminerAssessment": {
+      "title": "ExaminerAssessment",
+      "description": "Detailed qualitative and quantitative assessment from an examiner",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Assessment ID" },
+        "applicantId": { "type": "string", "description": "Applicant ID" },
+        "applicantName": { "type": "string", "description": "Applicant name" },
+        "registrationNumber": { "type": "string", "description": "Registration code" },
+        "examinerId": { "type": "string", "description": "Examiner UID" },
+        "examinerName": { "type": "string", "description": "Examiner full name" },
+        "categoryId": { "type": "string", "description": "Assessment category" },
+        "assessmentType": { "type": "string", "enum": ["tahfidz", "quran_recitation", "interview", "attitude"], "description": "Type of assessment" },
+        "score": { "type": "number", "description": "Score 0-100" },
+        "tajweedScore": { "type": "number", "description": "Tajweed accuracy 0-100" },
+        "memorizationScore": { "type": "number", "description": "Memorization fluency 0-100" },
+        "adabScore": { "type": "number", "description": "Character and demeanor 0-100" },
+        "notes": { "type": "string", "maxLength": 1000, "description": "Detailed feedback" },
+        "recommendation": { "type": "string", "enum": ["Sangat Direkomendasikan", "Direkomendasikan", "Dipertimbangkan", "Tidak Direkomendasikan"], "description": "Recommendation" },
+        "createdAt": { "type": "string", "description": "Created timestamp" }
+      },
+      "required": ["applicantId", "examinerId", "assessmentType", "score"]
+    },
+    "AdmissionDecision": {
+      "title": "AdmissionDecision",
+      "description": "Official admissions decision and decree issued by Pesantren Leadership",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Decision ID" },
+        "applicantId": { "type": "string", "description": "Applicant ID" },
+        "registrationNumber": { "type": "string", "description": "Registration code" },
+        "decision": { "type": "string", "enum": ["accepted", "rejected", "waitlist", "pending"], "description": "Final status" },
+        "decreeNumber": { "type": "string", "maxLength": 100, "description": "Surat Keputusan number" },
+        "notes": { "type": "string", "maxLength": 800, "description": "Official announcement message" },
+        "decidedBy": { "type": "string", "description": "Admin UID" },
+        "decidedAt": { "type": "string", "description": "Decision timestamp" }
+      },
+      "required": ["applicantId", "registrationNumber", "decision"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "entities.User" },
+      "description": "User profiles containing role information"
+    },
+    "/admins/{userId}": {
+      "schema": { "$ref": "entities.Admin" },
+      "description": "System admin verification documents"
+    },
+    "/applicants/{applicantId}": {
+      "schema": { "$ref": "entities.Applicant" },
+      "description": "PPDB student application records"
+    },
+    "/testCategories/{categoryId}": {
+      "schema": { "$ref": "entities.TestCategory" },
+      "description": "Subject assessment categories"
+    },
+    "/questionBanks/{bankId}": {
+      "schema": { "$ref": "entities.QuestionBank" },
+      "description": "Test questions definition and rules"
+    },
+    "/testSchedules/{scheduleId}": {
+      "schema": { "$ref": "entities.TestSchedule" },
+      "description": "Exam schedule slots"
+    },
+    "/testSessions/{sessionId}": {
+      "schema": { "$ref": "entities.TestSession" },
+      "description": "Test taking sessions per applicant"
+    },
+    "/testAnswers/{answerId}": {
+      "schema": { "$ref": "entities.TestAnswer" },
+      "description": "Confidential applicant answer records"
+    },
+    "/testResults/{resultId}": {
+      "schema": { "$ref": "entities.TestResult" },
+      "description": "Grading outcomes and aggregated scores"
+    },
+    "/examinerAssessments/{assessmentId}": {
+      "schema": { "$ref": "entities.ExaminerAssessment" },
+      "description": "Evaluations conducted by examiners"
+    },
+    "/admissionDecisions/{decisionId}": {
+      "schema": { "$ref": "entities.AdmissionDecision" },
+      "description": "Official acceptance decisions"
+    }
+  }
+}
